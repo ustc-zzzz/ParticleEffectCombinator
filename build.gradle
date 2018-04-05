@@ -47,8 +47,8 @@ repositories {
 //  }
 }
 
-version = '0.1.0'
-archivesBaseName = 'ParticleCombinator'
+version = '0.2.0'
+archivesBaseName = 'ParticleEffectCombinator'
 
 minecraft {
     version = '1.10.2'
@@ -61,7 +61,7 @@ minecraft {
 
 task apiJar(type: Jar, dependsOn: sourceJar) {
     from 'build/sources/api/java/'
-    baseName = 'ParticleCombinatorAPI'
+    baseName = 'ParticleEffectCombinatorAPI'
     
     from 'api/LICENSE'
 }
@@ -72,8 +72,8 @@ task javadocJar(type: Jar, dependsOn: javadoc) {
 }
 
 artifacts {
-    archives sourceJar
     archives apiJar
+    archives sourceJar
     archives javadocJar
 }
 
