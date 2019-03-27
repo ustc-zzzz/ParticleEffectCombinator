@@ -23,6 +23,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.ParseException;
 import java.util.*;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 /**
@@ -38,12 +39,15 @@ public class PECCommandDispatcher implements Supplier<CommandCallable>
     private static final String PEC_COMMAND_NAME = ParticleEffectCombinator.PLUGIN_ID; // pec
 
     private final ParticleEffectCombinator plugin;
+
     private final CommandCallable listCommand;
     private final CommandCallable reloadCommand;
     private final CommandCallable displayCommand;
     private final CommandCallable versionCommand;
-    private final Random commandRandom = new Random();
+
     private final PECTranslation translation;
+
+    private final Random commandRandom = new Random();
 
     public PECCommandDispatcher(ParticleEffectCombinator plugin)
     {
@@ -52,7 +56,7 @@ public class PECCommandDispatcher implements Supplier<CommandCallable>
 
         this.displayCommand = CommandSpec.builder()
                 .arguments(GenericArguments.seq(
-                        GenericArguments.string(Text.of("effect-name")),
+                        GenericArguments.choices(Text.of("effect-name"), this::getEffectNames, Function.identity()),
                         GenericArguments.firstParsing(
                                 GenericArguments.seq(
                                         GenericArguments.literal(Text.of("at"), "at"),
@@ -169,24 +173,27 @@ public class PECCommandDispatcher implements Supplier<CommandCallable>
 
     private CommandResult runDisplayCommand(CommandSource src, CommandContext args) throws CommandException
     {
-        // noinspection ConstantConditions
-        String name = args.<String>getOne(Text.of("effect-name")).get();
-        Element element = this.plugin.getElementManager().getElements().get(name);
-        if (Objects.isNull(element) || !src.hasPermission("pec.send." + name))
+        Optional<String> nameOptional = args.getOne(Text.of("effect-name"));
+
+        Map<String, Element> elements = this.plugin.getElementManager().getElements();
+        Optional<Element> element = nameOptional.flatMap(name -> Optional.ofNullable(elements.get(name)));
+
+        if (!element.isPresent() || !src.hasPermission("pec.send." + nameOptional))
         {
-            Text error = this.translation.take("pec.display.notExists", name);
+            Text error = this.translation.take("pec.display.notExists", nameOptional);
             throw new CommandPermissionException(error);
         }
 
-        Optional<Location<World>> location = args.getOne(Text.of("at-location"));
-        if (!location.isPresent() && src instanceof Locatable) location = Optional.of(((Locatable) src).getLocation());
-        // noinspection ConstantConditions
-        Location<World> spawnLocation = location.get();
+        Optional<Location<World>> locationOptional = args.getOne(Text.of("at-location"));
+        Location<World> spawnLocation = locationOptional.orElse(((Locatable) src).getLocation());
 
         Collection<Player> players = args.getAll(Text.of("for-players"));
-        if (!args.hasAny(Text.of("for"))) players = spawnLocation.getExtent().getPlayers();
+        if (!args.hasAny(Text.of("for")))
+        {
+            players = spawnLocation.getExtent().getPlayers();
+        }
 
-        this.displayParticles(name, element, spawnLocation, players.toArray(new Player[0]));
+        this.displayParticles(nameOptional.get(), element.get(), spawnLocation, players.toArray(new Player[0]));
 
         return CommandResult.success();
     }
@@ -202,6 +209,11 @@ public class PECCommandDispatcher implements Supplier<CommandCallable>
         {
             this.plugin.getLogger().error("Find error when displaying particle: " + name, e);
         }
+    }
+
+    private Collection<String> getEffectNames()
+    {
+        return this.plugin.getElementManager().getElements().keySet();
     }
 
     @Override
