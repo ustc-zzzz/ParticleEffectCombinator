@@ -42,12 +42,12 @@ public class ParticleEffectCombinator
     static final String NAME = "ParticleEffectCombinator";
     static final String DESC = "A plugin for generating complex particle effects based on a series of basic elements";
 
-    public static final String GITHUB_URL = "https://github.com/ustc-zzzz/ParticleEffectCombinator";
-    public static final String WEBSITE_URL = "https://ore.spongepowered.org/zzzz/ParticleEffectCombinator";
-    public static final String API_URL = "https://api.github.com/repos/ustc-zzzz/ParticleEffectCombinator/releases";
+    static final String GITHUB_URL = "https://github.com/ustc-zzzz/ParticleEffectCombinator";
+    static final String WEBSITE_URL = "https://ore.spongepowered.org/zzzz/ParticleEffectCombinator";
+    static final String API_URL = "https://api.github.com/repos/ustc-zzzz/ParticleEffectCombinator/releases";
 
-    public static final SimpleDateFormat RFC3339 = new SimpleDateFormat("yyyy-MM-dd", Locale.ENGLISH);
-    public static final SimpleDateFormat ISO8601 = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX", Locale.ENGLISH);
+    static final SimpleDateFormat RFC3339 = new SimpleDateFormat("yyyy-MM-dd", Locale.ENGLISH);
+    static final SimpleDateFormat ISO8601 = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX", Locale.ENGLISH);
 
     @Inject
     private Logger logger;
@@ -171,7 +171,7 @@ public class ParticleEffectCombinator
         }
     }
 
-    public void reload(MessageReceiver receiver) throws IOException
+    void reload(MessageReceiver receiver) throws IOException
     {
         receiver.sendMessage(this.translation.take("pec.reload.start"));
         this.loadConfig();
@@ -179,22 +179,27 @@ public class ParticleEffectCombinator
         receiver.sendMessage(this.translation.take("pec.reload.finish"));
     }
 
-    public Logger getLogger()
+    Logger getLogger()
     {
         return this.logger;
     }
 
-    public Path getConfigDir()
+    Path getConfigDir()
     {
         return this.configDir;
     }
 
-    public PECTranslation getTranslation()
+    PECTranslation getTranslation()
     {
         return this.translation;
     }
 
-    public PECEffectManager getElementManager()
+    PECCommandDispatcher getCommands()
+    {
+        return this.commands;
+    }
+
+    PECEffectManager getElementManager()
     {
         return this.effectManager;
     }
